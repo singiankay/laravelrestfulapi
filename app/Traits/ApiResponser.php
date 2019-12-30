@@ -20,7 +20,7 @@ trait ApiResponser
         ], $code);
     }
 
-    protected function showAll(SupportCollection $collection, $code  = 200)
+    protected function showAll(SupportCollection $collection, $code = 200)
     {
         return $this->successResponse([
             'data' => $collection
@@ -30,5 +30,10 @@ trait ApiResponser
     protected function showOne(Model $model, $code = 200)
     {
         return $this->successResponse([ 'data' => $model ], $code);
+    }
+
+    protected function showMessage($message, $code = 200)
+    {
+        return $this->successResponse([ 'data' => $message ], $code);
     }
 }

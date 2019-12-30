@@ -30,7 +30,7 @@ $factory->define(User::class, function (Faker $faker) {
         'remember_token' => Str::random(10),
         'verified' => $verified = $faker->randomElement([User::VERIFIED_USER, User::UNVERIFIED_USER]),
         'verification_token' => $verified == User::VERIFIED_USER ? null : User::generateVerificationCode(),
-        'admin' => $admin = $faker->randomElement([User::REGULAR_USER, User::ADMIN_USER]),
+        'admin' => $verified = $faker->randomElement([User::REGULAR_USER, User::ADMIN_USER]),
     ];
 });
 
@@ -58,7 +58,7 @@ $factory->define(Transaction::class, function (Faker $faker) {
     $buyer = User::all()->except($seller->id)->random();
 
     return [
-        'quantity' => $faker->numberBetween(1,3),
+        'quantity' => $faker->numberBetween(1, 3),
         'buyer_id' => $buyer->id,
         'product_id' => $seller->products->random()->id,
     ];

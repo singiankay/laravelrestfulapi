@@ -7,6 +7,7 @@ use App\Product;
 use App\Seller;
 use App\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class SellerProductController extends ApiController
@@ -45,9 +46,9 @@ class SellerProductController extends ApiController
         //
     }
 
-    /** 
+    /**
      * Store a newly created resource in storage.
-     * 
+     *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
@@ -65,7 +66,7 @@ class SellerProductController extends ApiController
         $data = $request->all();
 
         $data['status'] = Product::UNAVAILABLE_PRODUCT;
-        $data['image'] = '1.jpg';
+        $data['image'] = $request->image->store('');
         $data['seller_id'] = $seller->id;
 
         $product = Product::create($data);
@@ -93,15 +94,20 @@ class SellerProductController extends ApiController
 
         $product->fill($request->only(['name','description','quantity']));
         
-        if($request->has('status')) {
+        if ($request->has('status')) {
             $product->status = $request->status;
 
-            if($product->isAvailable() && $product->categories()->count() == 0) {
+            if ($product->isAvailable() && $product->categories()->count() == 0) {
                 return $this->errorResponse('An active product must have at least one category', 409);
             }
         }
 
-        if($product->isClean()) {
+        if($request->hasFile('image')) {
+            Storage::delete($product->image);
+            $product->image = $request->image->store('');
+        }
+
+        if ($product->isClean()) {
             return $this->errorResponse('You need to specify a different value to update', 422);
         }
 
@@ -121,13 +127,14 @@ class SellerProductController extends ApiController
         $this->checkSeller($seller, $product);
 
         $product->delete();
+        Storage::delete($product->image);
         
         return $this->showOne($product);
     }
 
     protected function checkSeller(Seller $seller, Product $product)
     {
-        if($seller->id != $product->seller_id) {
+        if ($seller->id != $product->seller_id) {
             throw new HttpException(422, 'The specified seller is not the actual seller of this product');
         }
     }
